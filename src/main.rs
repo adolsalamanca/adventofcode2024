@@ -18,6 +18,7 @@ struct Args {
 }
 
 const SOLUTIONS_PATH: &str = "src/solutions/";
+// const INPUT_PATH: &str = "src/input/";
 
 fn main() {
     println!("\n|---------------------------|");
@@ -30,7 +31,7 @@ fn main() {
         return;
     }
 
-    let mut day_map: HashMap<u8, fn()> = HashMap::new();
+    let mut day_map: HashMap<u32, fn()> = HashMap::new();
     day_map.insert(1, solutions::day1::main);
 
     let solution_file = format!("{}day{}.rs", SOLUTIONS_PATH, args.day);
@@ -50,7 +51,7 @@ fn main() {
             for file in all_files {
                 match file {
                     Ok(entry) => {
-                        if entry.path().is_file() && !entry.path().display().to_string().contains("mod"){
+                        if entry.path().is_file() && entry.path().display().to_string().contains("day"){
                             run_function_day(&mut day_map, entry.path().display().to_string());
                         }
                     }
@@ -62,7 +63,7 @@ fn main() {
     }
 }
 
-fn run_function_day(day_map: &mut HashMap<u8, fn()>, solution_file: String) {
+fn run_function_day(day_map: &mut HashMap<u32, fn()>, solution_file: String) {
     let day = extract_day_number(solution_file.as_str());
 
     if let Some(day_function) = day_map.get(&day) {
@@ -72,11 +73,11 @@ fn run_function_day(day_map: &mut HashMap<u8, fn()>, solution_file: String) {
     }
 }
 
-fn extract_day_number(path: &str) -> u8 {
+fn extract_day_number(path: &str) -> u32 {
     // Define a regex pattern that matches the number after "day" and before ".rs"
     let re = Regex::new(r"day(\d+)\.rs").unwrap();
 
     re.captures(path)
-        .and_then(|n| n[1].parse::<u8>().ok()) // Parse it as u8
+        .and_then(|n| n[1].parse::<u32>().ok()) // Parse it as u32
         .unwrap_or(0) // If parsing fails, return 0 (or any other default value)
 }

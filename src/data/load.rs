@@ -1,39 +1,60 @@
 use std::fs::File;
-use std::io;
-use std::io::BufRead;
+use std::io::{self, BufRead, Cursor};
 use std::path::Path;
 
-#[allow(dead_code)]
-pub(crate) fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where P: AsRef<Path>, {
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
-}
-
-
-
-/// A function to read lines from a file and transform them using a closure.
-///
-/// `transform` is a closure that takes a `String` (the line) and returns a value of type `T`.
-/// The function returns a `Result<Vec<T>, io::Error>`, where `Vec<T>` contains the transformed lines.
-#[allow(dead_code)]
-pub(crate) fn read_lines_with_transform<P, F, T>(
-    filename: P,
-    transform: &F,  // Pass `transform` by reference
-) -> io::Result<Vec<T>>
+/// Reads lines from a file and processes them into two sorted arrays of `u32`.
+pub(crate) fn read_vectors_from_file<P>(filename: P) -> Result<(Vec<u32>, Vec<u32>), io::Error>
 where
     P: AsRef<Path>,
-    F: Fn(String) -> T,  // Closure type: takes a `String`, returns `T`
 {
-    // Open the file
     let file = File::open(filename)?;
-
-    // Create a BufReader and iterate over the lines
     let reader = io::BufReader::new(file);
 
-    // Map each line using the `transform` closure and collect the results into a vector
-    reader
-        .lines() // Returns an iterator over the lines
-        .map(|line| line.map(transform)) // Apply `transform` to each line
-        .collect() // Collect results into a vector
+    lines_sorted(reader)
+}
+
+/// Reads lines from a string and processes them into two sorted arrays of `u32`.
+#[allow(dead_code)]
+pub(crate) fn read_vectors_from_str(input: &str) -> Result<(Vec<u32>, Vec<u32>), io::Error> {
+    let reader = Cursor::new(input.as_bytes()); // Convert string to a cursor of bytes
+    lines_sorted(reader)
+}
+
+/// Processes lines from a `BufRead` and splits them into two sorted `Vec<u32>` arrays.
+fn lines_sorted(input: impl BufRead) -> Result<(Vec<u32>, Vec<u32>), io::Error> {
+    let mut from_arr = Vec::new();
+    let mut to_arr = Vec::new();
+
+    // Iterate through the lines in the input
+    for line in input.lines() {
+        match line {
+            Ok(line) => {
+                let parts: Vec<&str> = line.split_whitespace().collect(); // Split by whitespace
+
+                for part in parts {
+                    if part.is_empty() {
+                        continue; // Skip empty parts
+                    }
+
+                    // Parse the number and push it to the appropriate vector
+                    let number = part.parse::<u32>().map_err(|e| {
+                        println!("number to parse: {}" ,part);
+                        io::Error::new(io::ErrorKind::InvalidData, format!("Parse error: {}", e))
+                    })?;
+
+                    if from_arr.len() == to_arr.len() {
+                        from_arr.push(number);
+                    } else {
+                        to_arr.push(number);
+                    }
+                }
+            }
+            Err(e) => return Err(e),
+        }
+    }
+
+    from_arr.sort();
+    to_arr.sort();
+
+    Ok((from_arr, to_arr))
 }
