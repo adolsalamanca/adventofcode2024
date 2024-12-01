@@ -3,7 +3,7 @@ use std::io::{self, BufRead, Cursor};
 use std::path::Path;
 
 /// Reads lines from a file and processes them into two sorted arrays of `u32`.
-pub(crate) fn read_vectors_from_file<P>(filename: P) -> Result<(Vec<u32>, Vec<u32>), io::Error>
+pub(crate) fn vectors_from_file<P>(filename: P) -> Result<(Vec<u32>, Vec<u32>), io::Error>
 where
     P: AsRef<Path>,
 {
@@ -15,12 +15,12 @@ where
 
 /// Reads lines from a string and processes them into two sorted arrays of `u32`.
 #[allow(dead_code)]
-pub(crate) fn read_vectors_from_str(input: &str) -> Result<(Vec<u32>, Vec<u32>), io::Error> {
+pub(crate) fn vectors_from_str(input: &str) -> Result<(Vec<u32>, Vec<u32>), io::Error> {
     let reader = Cursor::new(input.as_bytes()); // Convert string to a cursor of bytes
     lines_sorted(reader)
 }
 
-/// Processes lines from a `BufRead` and splits them into two sorted `Vec<u32>` arrays.
+/// Reads location tuple lines from a `BufRead` and splits them into two sorted `Vec<u32>` arrays.
 fn lines_sorted(input: impl BufRead) -> Result<(Vec<u32>, Vec<u32>), io::Error> {
     let mut from_arr = Vec::new();
     let mut to_arr = Vec::new();
@@ -38,9 +38,9 @@ fn lines_sorted(input: impl BufRead) -> Result<(Vec<u32>, Vec<u32>), io::Error> 
 
                     // Parse the number and push it to the appropriate vector
                     let number = part.parse::<u32>().map_err(|e| {
-                        println!("number to parse: {}" ,part);
-                        io::Error::new(io::ErrorKind::InvalidData, format!("Parse error: {}", e))
+                        io::Error::new(io::ErrorKind::InvalidData, format!("parse error: {} when processing {} number", e, part))
                     })?;
+
 
                     if from_arr.len() == to_arr.len() {
                         from_arr.push(number);

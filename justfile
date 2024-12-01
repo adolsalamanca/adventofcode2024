@@ -1,4 +1,3 @@
-set allow-duplicate-recipes
 
 run:
     cargo run -- -a

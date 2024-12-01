@@ -1,21 +1,23 @@
 #[allow(unused_imports)]
 use crate::data;
-use crate::data::load::read_vectors_from_file;
+use crate::data::read::vectors_from_file;
 use super::locations;
 
 
 pub(crate) fn main(){
+    println!("day 1: find distance between location tuples and their similarity score.");
     let (mut from, mut to): (Vec<u32>, Vec<u32>) = (Vec::new(), Vec::new());
-    match read_vectors_from_file("src/input/day1.txt") {
+    match vectors_from_file("src/input/day1.txt") {
         Ok((from_arr, to_arr)) => {
             from = from_arr;
             to = to_arr;
         }
-        Err(e) => eprintln!("Error processing string input: {}", e),
+        Err(e) => eprintln!("error processing string input: {}", e),
     }
 
     let locs_map = locations::vectors_to_locations_map(from, to);
-    println!("total distance: {}",locs_map.total_distance());
+    println!("total distance: {}",locs_map.clone().total_distance());
+    println!("total similarity score: {}\n",locs_map.similarity_score_destiny());
 }
 
 

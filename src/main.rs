@@ -27,7 +27,7 @@ fn main() {
     let args = Args::parse();
 
     if !args.all && args.day == 0 {
-        println!("Nothing to run here.");
+        println!("nothing to run here.");
         return;
     }
 
@@ -37,7 +37,7 @@ fn main() {
     let solution_file = format!("{}day{}.rs", SOLUTIONS_PATH, args.day);
     if !args.all{
         if !Path::new(solution_file.as_str()).exists(){
-            println!("Trying to run a non existent solution, {}" ,solution_file);
+            println!("trying to run a non existent solution, {}" ,solution_file);
             return;
         }
 
@@ -45,21 +45,22 @@ fn main() {
         return;
     }
 
-    println!("Running all solutions \n");
+    println!("running all solutions \n");
     match fs::read_dir(SOLUTIONS_PATH) {
         Ok(all_files) => {
             for file in all_files {
                 match file {
                     Ok(entry) => {
-                        if entry.path().is_file() && entry.path().display().to_string().contains("day"){
-                            run_function_day(&mut day_map, entry.path().display().to_string());
+                        let file_name = entry.path().display().to_string();
+                        if entry.path().is_file() && file_name.contains("day"){
+                            run_function_day(&mut day_map, file_name);
                         }
                     }
-                    Err(e) => eprintln!("Error reading entry: {}", e),
+                    Err(e) => eprintln!("error reading entry: {}", e),
                 }
             }
         }
-        Err(e) => eprintln!("Error opening directory: {}", e),
+        Err(e) => eprintln!("error opening directory: {}", e),
     }
 }
 
@@ -69,12 +70,12 @@ fn run_function_day(day_map: &mut HashMap<u32, fn()>, solution_file: String) {
     if let Some(day_function) = day_map.get(&day) {
         day_function(); // Call the selected function
     } else {
-        eprintln!("No solution found for '{}'.", day);
+        eprintln!("no solution found for '{}'.", day);
     }
 }
 
 fn extract_day_number(path: &str) -> u32 {
-    // Define a regex pattern that matches the number after "day" and before ".rs"
+    // matches the number after "day" and before ".rs"
     let re = Regex::new(r"day(\d+)\.rs").unwrap();
 
     re.captures(path)
