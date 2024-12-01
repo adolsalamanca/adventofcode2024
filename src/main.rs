@@ -1,4 +1,5 @@
 mod solutions;
+mod data;
 
 use clap::Parser;
 use std::collections::HashMap;
@@ -16,7 +17,7 @@ struct Args {
     all: bool,
 }
 
-const SOLUTIONS_PATH: &'static str = "src/solutions/";
+const SOLUTIONS_PATH: &str = "src/solutions/";
 
 fn main() {
     println!("\n|---------------------------|");
