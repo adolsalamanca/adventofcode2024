@@ -7,7 +7,8 @@ enum Op {
 pub(crate) fn main(){
     let data: &str = include_str!("../input/day2.txt");
     println!("day 2: find safe levels.");
-    println!("safe levels: {}",calculate_safe_lines(data));
+    println!("safe levels part1: {}",calculate_safe_lines(data));
+    println!("safe levels part2: {}", calculate_safe_lines_with_one_exception(data));
 
 }
 
@@ -28,10 +29,12 @@ fn calculate_safe_lines(input_str: &str) -> u32{
                 last = line_numbers[i];
                 continue;
             }
+            let current_number = line_numbers[i];
+
                 match current_op {
                     Op::Add => {
-                        if line_numbers[i] > line_numbers[i - 1] && (line_numbers[i] - line_numbers[i-1]) <= 3 {
-                            last = line_numbers[i];
+                        if is_greater_safe(current_number, last) {
+                            last = current_number;
                             continue;
                         } else {
                             safe = false;
@@ -39,8 +42,8 @@ fn calculate_safe_lines(input_str: &str) -> u32{
                         }
                     }
                     Op::Sub => {
-                        if line_numbers[i] < line_numbers[i - 1] && (line_numbers[i-1] - line_numbers[i]) <= 3{
-                            last = line_numbers[i];
+                        if is_lower_safe(current_number, last) {
+                            last = current_number;
                             continue;
                         } else {
                             safe = false;
@@ -49,10 +52,12 @@ fn calculate_safe_lines(input_str: &str) -> u32{
                     }
 
                     Op::Unknown => {
-                        if line_numbers[i] > line_numbers[i - 1] && (line_numbers[i] - line_numbers[i-1]) <= 3 {
+                        if is_greater_safe(current_number, last) {
                             current_op = Op::Add;
-                        } else if line_numbers[i] < line_numbers[i - 1] && (line_numbers[i-1] - line_numbers[i]) <= 3{
+                            last = current_number;
+                        } else if is_lower_safe(current_number, last) {
                             current_op = Op::Sub;
+                            last = current_number;
                         } else {
                             safe = false;
                             break;
@@ -69,6 +74,42 @@ fn calculate_safe_lines(input_str: &str) -> u32{
     safe_lines
 }
 
+fn calculate_safe_lines_with_one_exception(input_str: &str) -> u32{
+    let mut safe_lines:u32 = 0;
+
+    input_str.lines().for_each(|l| {
+        let line_numbers:Vec<u32> = l.split(' ').map(|c| {
+            return c.parse::<u32>().expect("could not parse numbers");
+        }).collect::<Vec<u32>>();
+
+        if is_one_line_variation_safe(line_numbers) {
+            safe_lines+=1;
+        }
+    });
+
+    safe_lines
+}
+
+fn is_one_line_variation_safe(l: Vec<u32>) -> bool {
+    for i in 0..l.len(){
+        let mut cloned_line = l.clone();
+        cloned_line.remove(i);
+
+        if calculate_safe_lines(&*cloned_line.iter().map(|num| num.to_string()).collect::<Vec<_>>().join(" ")) > 0 {
+            return true;
+        };
+    }
+
+    false
+}
+
+fn is_greater_safe(n1: u32, n2: u32) -> bool {
+    n1 > n2 && (n1 - n2) <= 3
+}
+
+fn is_lower_safe(n1: u32, n2: u32) -> bool {
+    n2 > n1 && (n2 - n1) <= 3
+}
 
 #[test]
 fn should_identify_line_as_safe(){
@@ -83,6 +124,21 @@ fn should_identify_line_as_safe(){
     let safe_lines = calculate_safe_lines(input_str);
     assert_eq!(2, safe_lines);
 }
+
+#[test]
+fn should_identify_line_as_safe_removing_one_level(){
+    let input_str: &str = "\
+7 6 4 2 1
+1 2 7 8 9
+9 7 6 2 1
+1 3 2 4 5
+8 6 4 4 1
+1 3 6 7 9
+";
+    let safe_lines = calculate_safe_lines_with_one_exception(input_str);
+    assert_eq!(4, safe_lines);
+}
+
 
 
 /*
