@@ -33,6 +33,7 @@ fn main() {
 
     let mut day_map: HashMap<u32, fn()> = HashMap::new();
     day_map.insert(1, solutions::day1::main);
+    day_map.insert(2, solutions::day2::main);
 
     let solution_file = format!("{}day{}.rs", SOLUTIONS_PATH, args.day);
     if !args.all{
